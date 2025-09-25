@@ -5,6 +5,7 @@ using System.Numerics;
 /*
 Lyras Attempt at Vector3 class, based on unities Vector3 class 
 ps: i hate vectors
+beep
 */
 namespace RenderPipeline
 {
