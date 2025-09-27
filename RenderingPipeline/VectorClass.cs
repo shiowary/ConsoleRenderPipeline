@@ -3,15 +3,14 @@ using System.Numerics;
 
 
 /*
-Lyras Attempt at Vector3 class, based on unities Vector3 class 
-ps: i hate vectors
-beep
+Lyras Attempt at Vector3 class, based on unitys Vector3 class 
+this handles all of the necassary transform vecotore and other math
 */
 namespace RenderPipeline
 {
      
 
-    public class Vector3
+    public struct Vector3
     {
         public float x; 
         public float y;

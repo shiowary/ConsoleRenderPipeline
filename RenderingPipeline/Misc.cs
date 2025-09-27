@@ -13,128 +13,24 @@ using System.Threading.Tasks;
 
 namespace RenderPipeline
 {
-
-    public class RenderClass
-    {
-        public Screen screen = new Screen();
-        private bool running = true;
-        public static void Main(string[] args)
-        {
-            //sRenderClass main = new RenderClass();
-            //main.DrawScreen();
-            RenderClass main = new RenderClass();
-            main.DrawScreen(100);
-            Console.ReadKey();
-
-
-        }
-        private async Task DrawScreen(int cycleDelay)
-        {
-            int i = 0;
-            while (running)
-            {
-                screen.ScreenHandler(cycleDelay,i);
-                if (Console.KeyAvailable)
-                {
-                    var key = Console.ReadKey(true);
-                    if (key.Key == ConsoleKey.Escape)
-                        running = false;
-                }
-
-                await Task.Delay(cycleDelay);
-                i++;
-            }
-        }
-    }
-
-    public class Pixel
-    {
-        public Pixel(Vector3 pos, char px = '+', ConsoleColor col = ConsoleColor.White) {
-            this.pos = pos;
-            this.px = px;
-            this.color = col;
-        }
-        public Vector3 pos = new Vector3();
-        public char px;
-        public ConsoleColor color;
-    }
-
-    public class Screen
-    {
-        private List<Pixel> pixels = new List<Pixel>();
-        private List<Pixel> nextPixels = new List<Pixel>();
-        private List<(int,int)> buffer = new List<(int,int)> (); //list of coordinates which will become the pixels of the next step
-
-        private HelperFunc h = new HelperFunc();
-        public void renderScreen() {
-            foreach (Pixel pixel in pixels)
-            {
-                (int,int) px = h.TranslateToConsoleScreen((int)pixel.pos.x, (int)pixel.pos.y);
-                h.ReplaceLineinColor(px.Item1,px.Item2, pixel.px.ToString(),ConsoleColor.Black, pixel.color);
-            }
-        }
-
-        public void createLineInBuffer(int x0,int y0,int x1, int y1)
-        {
-            Vector3 origin = new Vector3(x0, y0);
-            Vector3 line = new Vector3(x1, y1);
-            pixels.AddRange(h.convertToPixels(h.DrawLine(origin,line)));
-        }
-
-
-        public void ScreenHandler(int refreshdelay, int iteration)
-        {
-            //clear current internal pixels
-            pixels.Clear();
-            pixels = nextPixels;
-
-            // we currently fill the buffer "manually"
-            buffer.AddRange(DrawInBuffer(iteration));
-            //
-
-            //fill the next pixel itteration for next frame
-            nextPixels = h.convertToPixels(buffer);
-            //clear window fully
-            Console.Clear();
-            //redraw all pixels within the pixel buffer
-            renderScreen();
-            //clear the buffer
-            buffer.Clear();
-        }
-
-        public List<(int,int)> DrawInBuffer(int iteration, float other = 0f, string args = "")
-        {
-            List<(int,int)> buffer = new List<(int,int)> ();
-
-            //do some magic to create buffer logic within this
-
-            //for now we do clock
-            buffer.AddRange(h.daclock(iteration * 5));
-
-            return buffer;
-        }
-
-        
-    }
-
-
     public class HelperFunc
     {
-        public void ReplaceLine(int left, int top, string txt) {
+        public void ReplaceLine(int left, int top, string txt)
+        {
             Console.SetCursorPosition(left, top);
             Console.Write(txt);
         }
-        public Pixel convertToPixel((int, int) pixel, char px = '+', ConsoleColor col = ConsoleColor.White)
+        public Pixel convertToPixel((int, int, char, ConsoleColor) pixel, char px = '+', ConsoleColor col = ConsoleColor.White)
         {
             Vector3 tempVector = new Vector3(pixel.Item1, pixel.Item2);
-            Pixel temp = new Pixel(tempVector, px, col); //generate a default pixel for now
+            Pixel temp = new Pixel(tempVector, pixel.Item3, pixel.Item4); //generate a default pixel for now
             return temp;
         }
 
-        public List<Pixel> convertToPixels(List<(int,int)> px2, List<(int,int,int)> px3 = null)
+        public List<Pixel> convertToPixels(List<(int, int, char, ConsoleColor)> px2, List<(int, int, int)> px3 = null)
         {
             List<Pixel> newpixels = new List<Pixel>();
-            foreach ((int,int) pixelcoord in px2)
+            foreach ((int, int, char, ConsoleColor) pixelcoord in px2)
             {
                 Pixel temp = convertToPixel(pixelcoord);
                 newpixels.Add(temp);
@@ -144,9 +40,9 @@ namespace RenderPipeline
 
         //Bresenham’s algorithm to draw a line from (0,0) to the vector3 point
         //this part is stolen from stack overflow
-        public List<(int, int)> DrawLine(Vector3 origin, Vector3 line)
+        public List<(int, int, char, ConsoleColor)> DrawLine(Vector3 origin, Vector3 line, char px = '#', ConsoleColor col = ConsoleColor.White)
         {
-            List<(int, int)> points = new List<(int, int)>();
+            List<(int, int, char, ConsoleColor)> points = new List<(int, int, char, ConsoleColor)>();
             int x0 = (int)origin.x;
             int y0 = (int)origin.y;
             int x1 = (int)line.x;
@@ -158,7 +54,7 @@ namespace RenderPipeline
             int err = dx - dy;
             while (true)
             {
-                points.Add((x0, y0));
+                points.Add((x0, y0, px, col));
                 if (x0 == x1 && y0 == y1) break;
                 int e2 = 2 * err;
                 if (e2 > -dy)
@@ -175,15 +71,15 @@ namespace RenderPipeline
             return points;
         }
 
-        public void ReplaceLineinColor(int left, int top,string txt, ConsoleColor backcol = ConsoleColor.Black, ConsoleColor forecol = ConsoleColor.White)
+        public void ReplaceLineinColor(int left, int top, string txt, ConsoleColor backcol = ConsoleColor.Black, ConsoleColor forecol = ConsoleColor.White)
         {
             ConsoleColor baseforcol = ConsoleColor.White;
             ConsoleColor basebackcol = ConsoleColor.Black;
             Console.ForegroundColor = forecol;
             Console.BackgroundColor = backcol;
             ReplaceLine(left, top, txt);
-            Console.ForegroundColor=baseforcol;
-            Console.BackgroundColor=basebackcol;
+            Console.ForegroundColor = baseforcol;
+            Console.BackgroundColor = basebackcol;
         }
 
         public int calculatebuffer()
@@ -191,7 +87,7 @@ namespace RenderPipeline
             return 0;
         }
 
-        public (int,int) FindAcualCentre() //its the center of the current console window, this is an absolute number
+        public (int, int) FindAcualCentre() //its the center of the current console window, this is an absolute number
         {
             int width = Console.WindowWidth;
             int height = Console.WindowHeight;
@@ -201,7 +97,7 @@ namespace RenderPipeline
         }
 
         //Translates the coordinate given into a coordinate that the console understands aka (index from top, index from left)
-        public (int, int) TranslateToConsoleScreen(int x, int y, int z = 0)
+        public (int, int, char, ConsoleColor) TranslateToConsoleScreen(Pixel px, int x, int y, int z = 0)
         {
             var (centerX, centerY) = FindAcualCentre();
             // X grows right, console X grows right
@@ -211,18 +107,18 @@ namespace RenderPipeline
             // Clamp to console bounds
             screenX = Math.Clamp(screenX, 0, Console.WindowWidth - 1);
             screenY = Math.Clamp(screenY, 0, Console.WindowHeight - 1);
-            return (screenX, screenY);
+            return (screenX, screenY, px.px, px.color);
         }
 
 
 
-        public List<(int,int)> daclock(int iteration)
+        public List<(int, int, char, ConsoleColor)> daclock(int iteration,int len,char px,ConsoleColor col)
         {
             float angle = -(iteration % 360) * (float)(Math.PI / 180.0);
-            int length = 10;
+            int length = len;
             int endX = (int)(length * Math.Cos(angle));
             int endY = (int)(length * Math.Sin(angle));
-            return DrawLine(new Vector3(0, 0), new Vector3(endX, endY));
+            return DrawLine(new Vector3(0, 0), new Vector3(endX, endY),px,col);
         }
 
 
@@ -241,26 +137,26 @@ namespace RenderPipeline
         public class ScreenMath
         {
             private HelperFunc helper = new HelperFunc();
-            private List<(int,int)> accumolator = new List<(int,int)> ();
+            private List<(int, int, char, ConsoleColor)> accumolator = new List<(int, int, char, ConsoleColor)>();
 
 
 
             //modified code and ideas from https://stackoverflow.com/questions/11075505/get-all-points-within-a-triangle
-            public List<(int,int)>GetTriangle(Vector3 a, Vector3 b, Vector3 c)
+            public List<(int, int, char, ConsoleColor)> GetTriangle(Vector3 a, Vector3 b, Vector3 c)
             {
-                List<(int,int)> tempbuffer = new List<(int,int)> ();
+                List<(int, int, char, ConsoleColor)> tempbuffer = new List<(int, int, char, ConsoleColor)>();
                 tempbuffer.AddRange(helper.DrawLine(a, b));
                 tempbuffer.AddRange(helper.DrawLine(a, c));
                 tempbuffer.AddRange(helper.DrawLine(b, c));
                 return tempbuffer;
             }
 
-            public List<(int,int)> FillTriangle(Vector3 a, Vector3 b, Vector3 c)
+            public List<(int, int, char, ConsoleColor)> FillTriangle(Vector3 a, Vector3 b, Vector3 c)
             {
                 var v1 = (x: (int)a.x, y: (int)a.y);
                 var v2 = (x: (int)b.x, y: (int)b.y);
                 var v3 = (x: (int)c.x, y: (int)c.y);
-                List<(int,int)>points = new List<(int,int)> ();
+                List<(int, int, char, ConsoleColor)> points = new List<(int, int, char, ConsoleColor)>();
                 //sort the tiangle points by size to magic
 
                 var verts = new List<(int x, int y)> { v1, v2, v3 }
@@ -285,7 +181,7 @@ namespace RenderPipeline
                     if (ax > bx) (ax, bx) = (bx, ax);
 
                     for (int x = ax; x <= bx; x++)
-                        points.Add((x, y));
+                        points.Add((x, y, '#', ConsoleColor.White));
                 }
 
                 return points;
@@ -299,8 +195,7 @@ namespace RenderPipeline
             }
 
             //Modified to fit my needs with T:Vector3 
-            public  Vector3 GetTriangleCenter<T>(T p0, T p1, T p2)
-            where T : Vector3
+            public Vector3 GetTriangleCenter(Vector3 p0, Vector3 p1, Vector3 p2)
             {
                 return new Vector3(p0.x + p1.x + p2.x / 3, p0.y + p1.y + p2.y / 3);
             }
@@ -309,8 +204,7 @@ namespace RenderPipeline
                 double s = (a + b + c) / 2.0f;
                 return (float)Math.Sqrt(s * (s - (double)a) * (s - (double)b) * (s - (double)c));
             }
-            public static bool CheckIfValidTriangle<T>(T v1, T v2, T v3, out float a, out float b, out float c)
-            where T : Vector3
+            public static bool CheckIfValidTriangle(Vector3 v1, Vector3 v2, Vector3 v3, out float a, out float b, out float c)
             {
                 a = Vector2.Distance(new Vector2(v1.x, v1.y), new Vector2(v2.x, v2.y));
                 b = Vector2.Distance(new Vector2(v2.x, v2.y), new Vector2(v3.x, v3.y));
@@ -320,7 +214,8 @@ namespace RenderPipeline
                     return false;
                 return true;
             }
+
+
         }
-    
     }
 }
