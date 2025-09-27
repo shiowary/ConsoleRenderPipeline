@@ -1,7 +1,7 @@
 ﻿/*
  
 How pixels are stored internally
- 
+while we use tupel for a large part of the code pixels are then used to render every screen, pixels act as intersection for vector math  
 */
 
 

@@ -8,6 +8,7 @@
 using System;
 using System.Drawing;
 using System.Numerics;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -112,13 +113,13 @@ namespace RenderPipeline
 
 
 
-        public List<(int, int, char, ConsoleColor)> daclock(int iteration,int len,char px,ConsoleColor col)
+        public List<(int, int, char, ConsoleColor)> daclock(int iteration, int len, char px, ConsoleColor col)
         {
             float angle = -(iteration % 360) * (float)(Math.PI / 180.0);
             int length = len;
             int endX = (int)(length * Math.Cos(angle));
             int endY = (int)(length * Math.Sin(angle));
-            return DrawLine(new Vector3(0, 0), new Vector3(endX, endY),px,col);
+            return DrawLine(new Vector3(0, 0), new Vector3(endX, endY), px, col);
         }
 
 
@@ -138,7 +139,7 @@ namespace RenderPipeline
         {
             private HelperFunc helper = new HelperFunc();
             private List<(int, int, char, ConsoleColor)> accumolator = new List<(int, int, char, ConsoleColor)>();
-
+            private Vector3 v = new Vector3();
 
 
             //modified code and ideas from https://stackoverflow.com/questions/11075505/get-all-points-within-a-triangle
@@ -194,7 +195,6 @@ namespace RenderPipeline
                 return a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y);
             }
 
-            //Modified to fit my needs with T:Vector3 
             public Vector3 GetTriangleCenter(Vector3 p0, Vector3 p1, Vector3 p2)
             {
                 return new Vector3(p0.x + p1.x + p2.x / 3, p0.y + p1.y + p2.y / 3);
@@ -216,6 +216,129 @@ namespace RenderPipeline
             }
 
 
+
+            //Geometric projection and 3D rendering for Cube and Triangle
+
+            public Vector3 Project(Vector3 point, float fov, float viewerDistance)
+            {
+                float factor = fov / (viewerDistance + point.z);
+                float x = point.x * factor;
+                float y = point.y * factor;
+                return new Vector3(x, y, point.z);
+            }
+
+
+
+            public List<(int, int, char, ConsoleColor)> DrawRotatingCube(float angle, float size = 5f)
+            {
+                List<(int, int, char, ConsoleColor)> buffer = new List<(int, int, char, ConsoleColor)>();
+
+                var vertices = new Vector3[]
+                {
+                    new Vector3(-size, -size, -size),
+                    new Vector3( size, -size, -size),
+                    new Vector3( size,  size, -size),
+                    new Vector3(-size,  size, -size),
+                    new Vector3(-size, -size,  size),
+                    new Vector3( size, -size,  size),
+                    new Vector3( size,  size,  size),
+                    new Vector3(-size,  size,  size),
+                };
+
+                var rotatedVertices = new Vector3[vertices.Length];
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    rotatedVertices[i] = v.RotateY(vertices[i], angle);
+                    rotatedVertices[i] = v.RotateX(rotatedVertices[i], angle * 1.3f);
+                    rotatedVertices[i] = v.RotateZ(rotatedVertices[i], angle * 0.7f);
+                }
+
+                var screenVertices = new Vector3[vertices.Length];
+                for (int i = 0; i < rotatedVertices.Length; i++)
+                {
+                    Vector3 translated = rotatedVertices[i] + new Vector3(0, 0, 15f);
+                    screenVertices[i] = Project(translated, 25f, 10f);
+                }
+
+                // Define cube edges
+                var edges = new (int, int)[]
+                {
+                (0, 1), (1, 2), (2, 3), (3, 0),
+                (4, 5), (5, 6), (6, 7), (7, 4),
+                (0, 4), (1, 5), (2, 6), (3, 7)
+                };
+
+                foreach (var (start, end) in edges)
+                {
+                    Vector3 pointA = screenVertices[start];
+                    Vector3 pointB = screenVertices[end];
+                    var linePoints = helper.DrawLine(
+                        new Vector3((int)pointA.x, (int)pointA.y, 0),
+                        new Vector3((int)pointB.x, (int)pointB.y, 0),
+                        '#',
+                        ConsoleColor.Cyan
+                    );
+                    buffer.AddRange(linePoints);
+                }
+
+                return buffer;
+            }
+
+            public List<(int, int, char, ConsoleColor)> DrawRotatingTriangle(float angle, float size = 8, bool filled = false)
+            {
+                var v1 = new Vector3(-size, -size, -size);
+                var v2 = new Vector3(size, -size, 0);
+                var v3 = new Vector3(0, size, size);
+
+                v1 = v.RotateZ(v.RotateY(v.RotateX(v1, angle), angle * 0.8f), angle * 1.2f);
+                v2 = v.RotateZ(v.RotateY(v.RotateX(v2, angle), angle * 0.8f), angle * 1.2f);
+                v3 = v.RotateZ(v.RotateY(v.RotateX(v3, angle), angle * 0.8f), angle * 1.2f);
+
+                v1 = Project(v1 + new Vector3(0, 0, 15f), 25f, 10f);
+                v2 = Project(v2 + new Vector3(0, 0, 15f), 25f, 10f);
+                v3 = Project(v3 + new Vector3(0, 0, 15f), 25f, 10f);
+
+                if (filled == false)
+                {
+                    //DrawTriangle not filled
+                    return GetTriangle(v1, v2, v3); ;
+                }
+                else
+                {
+                    //Draw filled triangle
+                    return FillTriangle(v1, v2, v3);
+                }
+            }
+
+            public List<(int, int, char, ConsoleColor)> DrawRotatingPyramid(float angle, float size = 8)
+            {
+                var v1 = new Vector3(-size, -size, -size);
+                var v2 = new Vector3(size, -size, -size);
+                var v3 = new Vector3(0, size, -size);
+                var v4 = new Vector3(0, 0, size);
+
+                v1 = v.RotateZ(v.RotateY(v.RotateX(v1, angle), angle * 0.8f), angle * 1.2f);
+                v2 = v.RotateZ(v.RotateY(v.RotateX(v2, angle), angle * 0.8f), angle * 1.2f);
+                v3 = v.RotateZ(v.RotateY(v.RotateX(v3, angle), angle * 0.8f), angle * 1.2f);
+                v4 = v.RotateZ(v.RotateY(v.RotateX(v4, angle), angle * 0.8f), angle * 1.2f);
+
+                float distance = 25f;
+                v1 = Project(v1 + new Vector3(0, 0, distance), 30f, 15f);
+                v2 = Project(v2 + new Vector3(0, 0, distance), 30f, 15f);
+                v3 = Project(v3 + new Vector3(0, 0, distance), 30f, 15f);
+                v4 = Project(v4 + new Vector3(0, 0, distance), 30f, 15f);
+
+                var buffer = new List<(int, int, char, ConsoleColor)>();
+
+                buffer.AddRange(helper.DrawLine(v1, v2, '+', ConsoleColor.Cyan)); // Base
+                buffer.AddRange(helper.DrawLine(v2, v3, '+', ConsoleColor.Cyan)); // Base
+                buffer.AddRange(helper.DrawLine(v3, v1, '+', ConsoleColor.Cyan)); // Base
+                buffer.AddRange(helper.DrawLine(v1, v4, '#', ConsoleColor.Yellow)); // Side
+                buffer.AddRange(helper.DrawLine(v2, v4, '#', ConsoleColor.Yellow)); // Side
+                buffer.AddRange(helper.DrawLine(v3, v4, '#', ConsoleColor.Yellow)); // Side
+
+                return buffer;
+            }
         }
     }
 }

@@ -4,7 +4,7 @@
  
 */
 // your reference class must be included for now
-using Example;
+using NAMESPACENAME;
 //
 
 using System;
@@ -26,8 +26,9 @@ namespace RenderPipeline
         public static void Main(string[] args)
         {
             RenderClass main = new RenderClass();
+            Console.CursorVisible = false;
             main.running = true;
-            main.DrawScreen(1000); //screen refresh rate in ms = 3 = 60fps, 3 = 60fps
+            main.DrawScreen(10); //screen refresh rate in ms = 3 = 60fps, 3 = 60fps
             Console.ReadKey();
         }
 
@@ -84,16 +85,14 @@ namespace RenderPipeline
 
         private async Task DrawScreen(int cycleDelay)
         {
-            //ADD CLASS WITH RENDERING FUNCTION AS FOLLOWS -> this will act as the main instance of that object
-            //yourclass a = yourClass;
-            newEscapeRoom a = new newEscapeRoom();
+            SOMENAME a = new SOMENAME();
             a.initReference(this);
             //
             int i = 0;
             while (running)
             {
                 
-                screen.buffer = InvokeStoredMethod(storedClass);
+                screen.buffer.AddRange(InvokeStoredMethod(storedClass,i));
                 screen.ScreenHandler(cycleDelay,i);
                 if (Console.KeyAvailable)
                 {
@@ -148,18 +147,13 @@ namespace RenderPipeline
             //clear current internal pixels
             pixels.Clear();
             pixels = nextPixels;
-
-            // we currently fill the buffer "manually"
-
-            //buffer.AddRange(DrawInBuffer(iteration));
-
             //fill the next pixel itteration for next frame
             nextPixels = h.convertToPixels(buffer);
             //clear window fully
             Console.Clear();
             //redraw all pixels within the pixel buffer
             renderScreen();
-            //clear the buffer
+            //clear the buffer before next frame
             buffer.Clear();
         }
 

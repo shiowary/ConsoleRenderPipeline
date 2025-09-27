@@ -186,6 +186,34 @@ namespace RenderPipeline
 
 
 
+        //-------------Rotation Vecotr math --------------
+
+
+        public Vector3 RotateX(Vector3 v, float angle)
+        {
+            float rad = angle *(float)Math.PI / 180f;
+            float cos = (float)Math.Cos(rad);
+            float sin = (float)Math.Sin(rad);
+            return new Vector3(v.x, v.y * cos - v.z * sin, v.y * sin + v.z * cos);
+        }
+
+        public Vector3 RotateY(Vector3 v, float angle)
+        {
+            float rad = angle * (float)Math.PI / 180f;
+            float cos = (float)Math.Cos(rad);
+            float sin = (float)Math.Sin(rad);
+            return new Vector3(v.x * cos + v.z * sin, v.y, -v.x * sin + v.z * cos);
+        }
+
+        public Vector3 RotateZ(Vector3 v, float angle)
+        {
+            float rad = angle * (float)Math.PI / 180f;
+            float cos = (float)Math.Cos(rad);
+            float sin = (float)Math.Sin(rad);
+            return new Vector3(v.x * cos - v.y * sin, v.x * sin + v.y * cos, v.z);
+        }
+
+
 
     }
 
