@@ -339,6 +339,46 @@ namespace RenderPipeline
 
                 return buffer;
             }
+
+
+            public List<(int, int, char, ConsoleColor)> DrawCircle(int radius, char px, ConsoleColor col)
+            {
+                var points = new List<(int, int, char, ConsoleColor)>();
+
+                for (int deg = 0; deg < 360; deg++)
+                {
+                    float angle = deg * (float)(Math.PI / 180.0);
+                    int x = (int)(radius * Math.Cos(angle));
+                    int y = (int)(radius * Math.Sin(angle));
+                    points.Add((x, y, px, col));
+                }
+
+                return points;
+            }
+
+
+            //Requires proper shading still
+            public List<(int, int, char, ConsoleColor)> DrawSphere(int radius, char px)
+            {
+                var points = new List<(int, int, char, ConsoleColor)>();
+
+                for (int thetaDeg = 0; thetaDeg < 360; thetaDeg += 5)
+                {
+                    for (int phiDeg = 0; phiDeg <= 180; phiDeg += 5)
+                    {
+                        float theta = thetaDeg * (float)(Math.PI / 180.0);
+                        float phi = phiDeg * (float)(Math.PI / 180.0);
+                        float x = radius * (float)Math.Cos(theta) * (float)Math.Sin(phi);
+                        float y = radius * (float)Math.Sin(theta) * (float)Math.Sin(phi);
+                        float z = radius * (float)Math.Cos(phi);
+                        Vector3 projected = Project(new Vector3(x, y, z), 30f, 15f);
+                        points.Add(((int)projected.x, (int)projected.y, px, ConsoleColor.Yellow));
+                    }
+                }
+                return points;
+            }
+
+
         }
     }
 }

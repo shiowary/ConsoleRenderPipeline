@@ -10,6 +10,7 @@ using RenderPipeline;
 using System;
 using System.Drawing;
 using System.Numerics;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Xml.Schema;
@@ -48,7 +49,7 @@ namespace NAMESPACENAME
             DrawRotatingCube(clock);
             //DrawRotatingTriangle(clock);
             drawRotatingPyramid(clock);
-
+            //DrawRoundthings(8); WIP
 
 
             //must return buffer in order for the rendering pipeline to know what does what
@@ -89,6 +90,12 @@ namespace NAMESPACENAME
         {
             float angle = clock;
             buffer.AddRange(m.DrawRotatingPyramid(angle, 8f));
+        }
+
+        public void DrawRoundthings(int size)
+        {
+            //buffer.AddRange(m.DrawSphere(size,'O'));
+            buffer.AddRange(m.DrawCircle(size, 'O',ConsoleColor.White ));
         }
     }
 

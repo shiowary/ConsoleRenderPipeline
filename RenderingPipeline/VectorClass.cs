@@ -8,8 +8,6 @@ this handles all of the necassary transform vecotore and other math
 */
 namespace RenderPipeline
 {
-     
-
     public struct Vector3
     {
         public float x; 
@@ -39,9 +37,7 @@ namespace RenderPipeline
             nz = nz / mag;
             return new Vector3(nx, ny, nz);
         }
-
         //magnitude	Returns the length of this vector (Read Only).
-
         public float magnitude() { 
             return (float)Math.Sqrt((double)Math.Pow((double)this.x, 2) + (double)Math.Pow((double)this.y, 2) + (double)Math.Pow((double)this.z, 2));
         }
