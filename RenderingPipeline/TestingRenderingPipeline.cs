@@ -46,9 +46,9 @@ namespace NAMESPACENAME
         public List<(int, int, char, ConsoleColor)> ProgrammScreen(int clock)
         {
             //ClockScreen();
-            DrawRotatingCube(clock);
-            //DrawRotatingTriangle(clock);
-            drawRotatingPyramid(clock);
+            //DrawRotatingCube(clock);
+            DrawRotatingTriangle(clock);
+            //drawRotatingPyramid(clock);
             //DrawRoundthings(8); WIP
 
 

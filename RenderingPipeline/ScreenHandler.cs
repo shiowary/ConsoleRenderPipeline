@@ -28,7 +28,7 @@ namespace RenderPipeline
             RenderClass main = new RenderClass();
             Console.CursorVisible = false;
             main.running = true;
-            main.DrawScreen(10); //screen refresh rate in ms = 3 = 60fps, 3 = 60fps
+            main.DrawScreen(100); //screen refresh rate in ms = 3 = 60fps, 3 = 60fps
             Console.ReadKey();
         }
 

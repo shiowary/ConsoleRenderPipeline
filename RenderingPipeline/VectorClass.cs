@@ -158,7 +158,7 @@ namespace RenderPipeline
         public static Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal)
         {
             float sqrMag = Dot(planeNormal, planeNormal);
-            if (sqrMag < 1e-15f) //magic very small number
+            if (sqrMag < float.Epsilon) //magic very small number
                 return vector;
             // Projection of vector onto the normal
             Vector3 projection = planeNormal * (Dot(vector, planeNormal) / sqrMag);
